@@ -37,12 +37,12 @@ const Whatsapp = async (req, res = response) => {
   };
 };
 
-const processMessage = async (req, messages, additionalData) => {
+const processMessage = async (req, messages, additionalData = {}) => {
   const {urlDocumento, filename, caption} = additionalData;
   const { type, from, id, context } = messages;
   const number = numeroTelefono(from);
   const messageContent = type === 'text' ? messages['text']['body'] : typeMessages[type];
-  const datos = {id, messageContent, number, type, context, urlDocumento, filename, caption};
+  const datos = {id, messageContent, number, type, context, additionalData};
   const telExistente = await buscarNumeroExistente(number);
   if (telExistente.existe) {
     const guardarMensaje = await GuardarMensajeRecibido(datos);
@@ -100,7 +100,7 @@ const SendTemplateWhatsApp = async (number) => {
 const GuardarMensajeRecibido = async (datos) => {
   try {
     console.log(datos);
-    const {id, messageContent:texto, number:telefono, type:tipo, context, urlDocumento, filename, caption} = datos;
+    const {id, messageContent:texto, number:telefono, type:tipo, context, additionalData:{urlDocumento,filename, caption}} = datos;
     const mensaje = {
       fecha: newFecha(),
       emisor: 'Externo',
