@@ -38,15 +38,15 @@ const Whatsapp = async (req, res = response) => {
 };
 
 const processMessage = async (req, messages, additionalData = {}) => {
-  const {urlDocumento, filename, caption} = additionalData;
   const { type, from, id, context } = messages;
   const number = numeroTelefono(from);
   const messageContent = type === 'text' ? messages['text']['body'] : typeMessages[type];
   const datos = {id, messageContent, number, type, context, additionalData};
   const telExistente = await buscarNumeroExistente(number);
   if (telExistente.existe) {
-    const guardarMensaje = await GuardarMensajeRecibido(datos);
+    const {mensaje} = await GuardarMensajeRecibido(datos);
     req.io.emit('todos-los-contactos', await obtenerNumerosExternos());
+    req.io.emit('mensaje-recibido', { ultimo: mensaje, telefono: number });
   };
 };
 
