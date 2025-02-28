@@ -8,8 +8,11 @@ const { numeroTelefono } = require('../utils/crearTelefono');
 const { buscarNumeroExistente, agregarProveedor, obtenerNumerosExternos } = require('./proveedor');
 const { newFecha } = require('../utils/fecha');
 const { MensajeError } = require('../utils/error');
-const { SampleText, TemplateText } = require('../utils/textTypes');
+const { SampleText, TemplateText, ReplyText } = require('../utils/textTypes');
 const { rutaDescargaArchivoRecibido } = require('../utils/manejoArchivos');
+const FormData = require('form-data');
+const path = require('path');
+const fs = require('fs');
 
 const Whatsapp = async (req, res = response) => {
   //Aqui empieza con la llegada de los mensajes desde whatsapp
@@ -129,10 +132,69 @@ const GuardarMensajeRecibido = async (datos) => {
   };
 };
 
+const SendReplyMessageWhatsApp = async (textResponse, number, id) => {
+  try {
+    const data = ReplyText(number, textResponse, id);
+    const res = await axios.post(`${urlMeta}/messages`, data, authFacebook);
+    if (res.status !== 200) {
+      return MensajeError('Error al enviar el mensaje en -->SendReplyMessageWhatsapp', res.statusText, false);
+    };
+    const {messages} = res.data;
+    return messages[0].id;  
+  } catch (error) {
+    return MensajeError('Error en -->SendReplyMessageWhatsApp', error, false);
+  };
+};
+
+const SetFileWhatsApp = async (filename, mimetype) => {
+  const ruta = path.join(__dirname, 'uploads/', filename);
+  const formData = new FormData();
+  formData.append('file', (ruta));
+  formData.append('messaging_product', 'whatsapp');
+  formData.append('type', mimetype);
+
+  try {
+
+    const resApiWhatsapp = await axios.postForm(`${urlMeta}/media`, {
+      "file": fs.createReadStream(ruta),
+      "messaging_product": "whatsapp",
+      "type": mimetype
+    }, {
+      headers: {
+        ...formData.getHeaders(),
+        "Authorization": `Bearer ${process.env.WHATSAPP_API_KEY}`
+      },
+    });
+    if (resApiWhatsapp.statusText !== "OK") {
+      return false;
+    }
+    return resApiWhatsapp.data
+  } catch (e) {
+    const err = MensajeError('Error al cargar el archivo', e, false);
+    return err;
+  };
+};
+
+const SendFileWhatsApp = async (data) => {
+  try {
+    const res = await axios.post(`${urlMeta}/messages`, data, authFacebook);
+    if (res.status !== 200) {
+      return MensajeError('Error al enviar el mensaje en -->SendFileWhatsApp', res.statusText, false);
+    };
+    const {messages} = res.data;
+    return messages[0];  
+  } catch (error) {
+    return MensajeError('Error en -->SendFileWhatsApp', error, false);
+  };
+};
+
 module.exports = {
-  Whatsapp,
-  VerifyToken,
+  GuardarMensajeRecibido,
+  SendFileWhatsApp,
   SendMessageWhatsApp,
+  SendReplyMessageWhatsApp,
   SendTemplateWhatsApp,
-  GuardarMensajeRecibido
+  SetFileWhatsApp,
+  VerifyToken,
+  Whatsapp,
 };

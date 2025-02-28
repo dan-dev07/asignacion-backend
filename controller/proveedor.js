@@ -115,9 +115,75 @@ const buscarNumeroExistente = async (telefono) => {
   }
 };
 
+const guardarMensajeEnviado = async (telefono, mensaje) => {
+  try {
+    const externo = await Proveedor.findOneAndUpdate(
+      { telefono },
+      {
+        $push: {
+          mensajes: mensaje
+        }
+      },
+      { new: true });
+    const ultimo = {ok:true, ultimo:externo.mensajes[externo.mensajes.length - 1]};
+    return ultimo;
+  } catch (error) {
+    const err = MensajeError('Error al guardar el mensaje enviado', error, false);
+    return err;
+  };
+};
+
+const guardarReplyMensajeEnviado = async (telefono, mensaje) => {
+  try {
+    const externo = await Proveedor.findOneAndUpdate(
+      { telefono },
+      {
+        $push: {
+          mensajes: mensaje
+        }
+      },
+      { new: true });
+    const ultimo = {ok:true, ultimo:externo.mensajes[externo.mensajes.length - 1]};   
+    return ultimo;
+  } catch (error) {
+    const err = MensajeError('Error al guardar -ReplyMensajeEnviado-', error, false);
+    return err;
+  };
+};
+
+const guardarArchivoEnviado = async (telefono, mensaje, urlDocumento, tipo, filename) => {
+  try {
+    const fecha = newFecha();
+    const nuevoMensaje = {
+      fecha,
+      emisor: 'Escotel',
+      tipo,
+      filename,
+      urlDocumento,
+      mensaje: tipo === 'image' ? "Imagen enviado" : "Documento enviado",
+      mensajeId:mensaje.id,
+      leido: false,
+    }
+    const externo = await Proveedor.findOneAndUpdate(
+      { telefono },
+      { $push: { mensajes: nuevoMensaje } },
+      { new: true });
+    const ultimo = externo.mensajes[externo.mensajes.length - 1];
+    return {
+      ok: true,
+      ultimo
+    };
+  } catch (error) {
+    return MensajeError('No se pudo guardar el archivo', error,false);
+  };
+}
+
 module.exports = {
   agregarMensaje,
-  obtenerNumerosExternos,
   agregarProveedor,
-  buscarNumeroExistente
+  buscarNumeroExistente,
+  guardarArchivoEnviado,
+  guardarMensajeEnviado,
+  guardarReplyMensajeEnviado,
+  obtenerNumerosExternos,
 };

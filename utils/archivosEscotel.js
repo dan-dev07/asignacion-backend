@@ -2,8 +2,8 @@ const stream = require('stream');
 const path = require('path');
 const fs = require('fs');
 const { BlobServiceClient } = require('@azure/storage-blob');
-const { MensajeError } = require('../error');
 const { v4: uuidv4 } = require('uuid');
+const { MensajeError } = require('./error');
 
 // Configura tu conexión a Azure Blob Storage
 const AZURE_STORAGE_CONNECTION_STRING = process.env.AZURE_CONNECTION_STRING;
@@ -12,7 +12,7 @@ const AZURE_STORAGE_CONNECTION_STRING = process.env.AZURE_CONNECTION_STRING;
 const containerName = 'data';
 
 const cargarArchivo = async (filename, mimetype, telefono) => {
-  const ruta = path.join(__dirname, '\.\.\/\.\./controller/uploads', filename);
+  const ruta = path.join(__dirname, '\/\.\./controller/uploads', filename);
   
   try {
     const id = uuidv4();
@@ -37,7 +37,7 @@ const cargarArchivo = async (filename, mimetype, telefono) => {
     const blockBlobClient = containerClient.getBlockBlobClient(blobName);
 
     //buffer
-    const streamBuffer = fs.readFileSync(ruta)
+    const streamBuffer = fs.readFileSync(ruta);
 
     // Subir el blob
     await blockBlobClient.uploadData(streamBuffer, streamBuffer.length, {

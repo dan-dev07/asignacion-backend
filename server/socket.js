@@ -1,6 +1,6 @@
 const { agregarConversacion, buscarNumeroExistenteConversacion } = require("../controller/conversacion");
-const { obtenerNumerosExternos, agregarProveedor } = require("../controller/proveedor");
-const { SendTemplateWhatsApp } = require("../controller/whatsapp");
+const { obtenerNumerosExternos, agregarProveedor, guardarReplyMensajeEnviado, guardarMensajeEnviado } = require("../controller/proveedor");
+const { SendTemplateWhatsApp, SendReplyMessageWhatsApp, SendMessageWhatsApp } = require("../controller/whatsapp");
 const Proveedor = require("../models/proveedor");
 const { MensajeError } = require("../utils/error");
 const { comprobarJWT } = require("../utils/jwt");
@@ -39,22 +39,19 @@ const SocketServer = (io) => {
     });
 
     //iniciar conversación
-    socket.on('iniciar-conversacion', async (datos, callback) => {
-      const { telefono } = datos;
-      const {mensajes} = await Proveedor.findOne({telefono});
-      if (mensajes.length > 0) {
-        const arrMensajes = mensajes.map( c => { 
-          if(c.emisor === 'Externo'){
-            c.leido = true;
-          };
-          return c;
-        });
-        callback({ok:true, mensajes:arrMensajes});
-        return ;
-      }else {
-        const err = MensajeError('Sin mensajes para mostrar', null, false);
-        callback(err);
+    socket.on('mensaje-enviado', async (datos) => {
+      const { telefono, emisor, fecha, leido, mensaje, user, tipo, message_id } = datos;
+      let mensajeId = '';
+      if (message_id?.startsWith('wamid.')) {
+        mensajeId = await SendReplyMessageWhatsApp(mensaje, telefono, message_id);
+        const {ultimo} = await guardarReplyMensajeEnviado(telefono, { emisor, fecha, leido, mensaje, tipo, mensajeId, context:{message_id}});
+        io.emit('mensaje-recibido', { ultimo, telefono });
+      } else {
+        mensajeId = await SendMessageWhatsApp(mensaje, telefono);
+        const {ultimo} = await guardarMensajeEnviado(telefono, { emisor, fecha, leido, mensaje, tipo, mensajeId });
+        io.emit('mensaje-recibido', { ultimo, telefono });
       };
+      io.emit('todos-los-contactos', await obtenerNumerosExternos());
     });
 
     socket.on('disconnect', () => {
