@@ -40,7 +40,6 @@ const SocketServer = (io) => {
 
     //iniciar conversación
     socket.on('mensaje-enviado', async (datos) => {
-      console.log(datos);
       const { telefono, emisor, fecha, leido, mensaje, user, tipo, message_id } = datos;
       let mensajeId = '';
       if (message_id?.startsWith('wamid.')) {

@@ -126,7 +126,6 @@ const busquedaPorNumero = async (req, res = response) => {
       return res.send([]);
     };
     const busqueda = await Proveedor.find({ telefono: { $regex: numero } });
-    console.log(busqueda);
     if (!busqueda) return res.send([]);
     const arr = busqueda.map(m => {
       const { datosExterno, telefono, uid } = m;
@@ -145,7 +144,6 @@ const busquedaPorNumero = async (req, res = response) => {
 const busquedaPorContacto = async (req, res = response) => {
   try {
     const { filtro } = req.body;
-    console.log(filtro);
     if (esSoloNumero(filtro) && filtro.length > 0) {
       const busqueda = await Proveedor.find({ telefono: { $regex: filtro } });
       if (!busqueda) return res.send([]);
