@@ -40,15 +40,18 @@ const SocketServer = (io) => {
 
     //iniciar conversación
     socket.on('mensaje-enviado', async (datos) => {
+      console.log(datos);
       const { telefono, emisor, fecha, leido, mensaje, user, tipo, message_id } = datos;
       let mensajeId = '';
       if (message_id?.startsWith('wamid.')) {
         mensajeId = await SendReplyMessageWhatsApp(mensaje, telefono, message_id);
-        const {ultimo} = await guardarReplyMensajeEnviado(telefono, { emisor, fecha, leido, mensaje, tipo, mensajeId, context:{message_id}});
+        const datos = { user ,emisor, fecha, leido, mensaje, tipo, mensajeId, context:{message_id}};
+        const {ultimo} = await guardarReplyMensajeEnviado(telefono, datos);
         io.emit('mensaje-recibido', { ultimo, telefono });
       } else {
         mensajeId = await SendMessageWhatsApp(mensaje, telefono);
-        const {ultimo} = await guardarMensajeEnviado(telefono, { emisor, fecha, leido, mensaje, tipo, mensajeId });
+        const datos =  { user, emisor, fecha, leido, mensaje, tipo, mensajeId };
+        const {ultimo} = await guardarMensajeEnviado(telefono, datos);
         io.emit('mensaje-recibido', { ultimo, telefono });
       };
       io.emit('todos-los-contactos', await obtenerNumerosExternos());

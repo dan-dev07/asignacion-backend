@@ -1,5 +1,7 @@
-const { response } = require('express');
+const { response, text } = require('express');
 const Proveedor = require('../models/proveedor');
+const { esSoloNumero } = require('../utils/esSoloNumero');
+const { eliminarAcentos } = require('../utils/textoSinAcentos');
 
 const mensajesContactos = async (req, res = response) => {
   try {
@@ -20,9 +22,7 @@ const mensajesContactos = async (req, res = response) => {
         datosExterno,
       };
     });
-    res.status(200).json({
-      mensajes: ultimoMensajeArray
-    });
+    res.status(200).json(ultimoMensajeArray);
 
   } catch (error) {
     console.log(error);
@@ -45,7 +45,7 @@ const getChat = async (req, res = response) => {
     });
     const contactoActualizado = await Proveedor.findOneAndUpdate({ telefono }, { mensajes: mensajesLeidos }, { new: true });
     const { mensajes: mensajesAct, datosExterno } = contactoActualizado;
-    res.send({ mensajes:mensajesAct, telefono, datosExterno });
+    res.send({ mensajes: mensajesAct, telefono, datosExterno });
   } catch (error) {
     console.log(error);
     res.status(500).json({
@@ -69,45 +69,135 @@ const actualizarDatosContacto = async (req, res = response) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({
-      response: 'No se pudo cargar la conversación'
+      response: 'No se actualizaron los datos'
     });
   };
 };
 
-//Paginación
-const getChatPaginacion = async (req, res = response) => {
+const busquedaPorTexto = async (req, res = response) => {
   try {
-    const {telefono, uid, pagina, limite = 10} = req.body;
-    const pacienteActual = await Paciente.findOne({telefono, 'usuarioAsignado.uid': uid});
-    const {chats} = pacienteActual;
-    const mensajesLeidos = chats.map(c=> {
-      if (c.emisor === 'Paciente') {
-        c.leido = true;
-      };
-      return c;
+    const { texto } = req.body;
+    let filtro = [];
+    let aux = [];
+    if (texto === '' || texto === null) {
+      return res.send([]);
+    };
+    const busqueda = await Proveedor.find({
+      mensajes: {
+        $elemMatch: {
+          mensaje: { $regex: texto.trim(), $options: 'i' }
+        }
+      }
     });
-    const startIndex = (pagina - 1) * limite;
-    const endIndex = page * limite;
-    const mensajesPorPagina = mensajesLeidos.slice(startIndex, endIndex);
-    //Calcular el total de páginas
-    const mensajesTotales = mensajesLeidos.length;
-    const paginasTotales = Math.ceil(mensajesTotales / limite);
+    const mensajesEncontrados = busqueda.flatMap(proveedor => {
+      let filtrado = proveedor.mensajes.filter(mensaje => mensaje.mensaje.match(new RegExp(texto.trim(), 'i')));
+      const nuevoArray = filtrado.map(m => {
+        const { fecha, emisor, tipo, mensaje, mensajeId, leido, _id } = m;
+        return {
+          fecha,
+          emisor,
+          tipo,
+          mensaje,
+          mensajeId,
+          leido,
+          id: _id,
+          telefono: proveedor.telefono,
+          uid: proveedor.uid,
+        }
+      });
+      return nuevoArray;
+    });
 
-    //Enviar mensajes paginados
-    res.status(200).json({
-      mensajesPorPagina,
-      mensajesTotales,
-      pagina,
-      paginasTotales
+    res.send(mensajesEncontrados);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      response: 'Error al hacer la búsqueda por texto'
+    });
+  };
+};
+
+const busquedaPorNumero = async (req, res = response) => {
+  try {
+    const { numero } = req.body;
+    let filtro = [];
+    let aux = [];
+    if (esSoloNumero(numero) && (numero.length === 0)) {
+      return res.send([]);
+    };
+    const busqueda = await Proveedor.find({ telefono: { $regex: numero } });
+    console.log(busqueda);
+    if (!busqueda) return res.send([]);
+    const arr = busqueda.map(m => {
+      const { datosExterno, telefono, uid } = m;
+      return { datosExterno, telefono, uid }
     })
 
+    res.send(arr);
   } catch (error) {
-    
-  }
+    console.log(error);
+    res.status(500).json({
+      response: 'Error al hacer la búsqueda por numero'
+    });
+  };
+};
+
+const busquedaPorContacto = async (req, res = response) => {
+  try {
+    const { filtro } = req.body;
+    console.log(filtro);
+    if (esSoloNumero(filtro) && filtro.length > 0) {
+      const busqueda = await Proveedor.find({ telefono: { $regex: filtro } });
+      if (!busqueda) return res.send([]);
+      const arr = busqueda.map(m => {
+        const { datosExterno, telefono, uid, mensajes } = m;
+        const ultimo = mensajes[mensajes.length - 1];
+      return {
+        telefono,
+        uid,
+        fecha: ultimo.fecha,
+        emisor: ultimo.emisor,
+        tipo: ultimo.tipo,
+        mensaje: ultimo.mensaje,
+        datosExterno,
+      };
+      });
+      res.send(arr);
+    } else if (typeof (filtro) === 'string' && filtro.length > 0) {
+      const filtroSinAcento = eliminarAcentos(filtro);
+      const busqueda = await Proveedor.find({ 'datosExterno.nombre': { $regex: filtroSinAcento, $options: 'i' } });
+      if (!busqueda) return res.send([]);
+      const arr = busqueda.map(m => {
+        const { datosExterno, telefono, uid, mensajes } = m;
+        const ultimo = mensajes[mensajes.length - 1];
+        return {
+          telefono,
+          uid,
+          fecha: ultimo.fecha,
+          emisor: ultimo.emisor,
+          tipo: ultimo.tipo,
+          mensaje: ultimo.mensaje,
+          datosExterno,
+        };
+      });
+      res.send(arr);
+    } else {
+      res.send([])
+    };
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      response: 'Error al hacer la búsqueda por numero'
+    });
+  };
 };
 
 module.exports = {
   actualizarDatosContacto,
+  busquedaPorTexto,
+  busquedaPorNumero,
+  busquedaPorContacto,
   getChat,
   mensajesContactos,
 };

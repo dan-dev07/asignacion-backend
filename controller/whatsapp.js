@@ -102,7 +102,6 @@ const SendTemplateWhatsApp = async (number) => {
 
 const GuardarMensajeRecibido = async (datos) => {
   try {
-    console.log(datos);
     const {id, messageContent:texto, number:telefono, type:tipo, context, additionalData:{urlDocumento,filename, caption}} = datos;
     const mensaje = {
       fecha: newFecha(),

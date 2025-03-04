@@ -3,7 +3,7 @@
 */
 
 const {Router} = require('express');
-const { mensajesContactos, getChat, actualizarDatosContacto } = require('../controller/datos');
+const { mensajesContactos, getChat, actualizarDatosContacto, busquedaPorContacto } = require('../controller/datos');
 const { check } = require('express-validator');
 const { validarCampos } = require('../middlewares/validarCampos');
 const { validarDatoNoNulo } = require('../utils/validaciones');
@@ -23,5 +23,9 @@ router.post('/actualizarPaciente', [
   check('telefono', 'Necesito un telefono').not().isEmpty(),
   check('uid', 'Necesito un identificador válido').not().isEmpty(),
 ], actualizarDatosContacto);
+
+router.post('/buscarContacto', [
+  check('filtro', 'Necesito un número/nombre para empezar la búsqueda').not().isEmpty()
+], busquedaPorContacto);
 
 module.exports = router;

@@ -1,6 +1,5 @@
-const { Schema, model } = require('mongoose');
-
-const ExternoSchema = Schema({
+const mongoose = require('mongoose');
+const ExternoSchema = new mongoose.Schema({
   datosExterno: {
     nombre: {
       type: String,
@@ -34,6 +33,10 @@ const ExternoSchema = Schema({
   },
   mensajes:[
     {
+      user:{
+        type:String,
+        require:true
+      },
       fecha: {
         type: String,
         required: true
@@ -57,7 +60,8 @@ const ExternoSchema = Schema({
       mensaje: {
         type: String,
         required: true,
-        trim: true
+        trim: true,
+        index:true
       },
       mensajeId: {
         type: String,
@@ -98,4 +102,4 @@ ExternoSchema.method('toJSON', function () {
   return object;
 });
 
-module.exports = model('Externo', ExternoSchema); 
+module.exports = mongoose.model('Externo', ExternoSchema); 
