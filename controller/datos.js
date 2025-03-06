@@ -2,6 +2,7 @@ const { response, text } = require('express');
 const Proveedor = require('../models/proveedor');
 const { esSoloNumero } = require('../utils/esSoloNumero');
 const { eliminarAcentos } = require('../utils/textoSinAcentos');
+const { obtenerNumerosExternos } = require('./proveedor');
 
 const mensajesContactos = async (req, res = response) => {
   try {
@@ -56,8 +57,8 @@ const getChat = async (req, res = response) => {
 
 const actualizarDatosContacto = async (req, res = response) => {
   try {
-    const { nombre, apellido, empresa, telefono, uid } = req.body;
-    const externoActualizado = await Proveedor.findOneAndUpdate({ telefono, uid }, {
+    const { nombre, apellido, empresa, telefono } = req.body;
+    const externoActualizado = await Proveedor.findOneAndUpdate({ telefono: 52 + telefono }, {
       datosExterno: {
         nombre,
         apellido,
@@ -65,6 +66,7 @@ const actualizarDatosContacto = async (req, res = response) => {
       }
     }, { new: true });
     const { datosExterno } = externoActualizado;
+    req.io.emit('todos-los-contactos', await obtenerNumerosExternos());
     res.send(datosExterno);
   } catch (error) {
     console.log(error);
@@ -120,8 +122,6 @@ const busquedaPorTexto = async (req, res = response) => {
 const busquedaPorNumero = async (req, res = response) => {
   try {
     const { numero } = req.body;
-    let filtro = [];
-    let aux = [];
     if (esSoloNumero(numero) && (numero.length === 0)) {
       return res.send([]);
     };
@@ -163,7 +163,9 @@ const busquedaPorContacto = async (req, res = response) => {
       res.send(arr);
     } else if (typeof (filtro) === 'string' && filtro.length > 0) {
       const filtroSinAcento = eliminarAcentos(filtro);
-      const busqueda = await Proveedor.find({ 'datosExterno.nombre': { $regex: filtroSinAcento, $options: 'i' } });
+      const busqueda = await Proveedor.find({ 
+        'datosExterno.nombre': { $regex: filtroSinAcento, $options: 'i' }, 
+      });
       if (!busqueda) return res.send([]);
       const arr = busqueda.map(m => {
         const { datosExterno, telefono, uid, mensajes } = m;

@@ -1,18 +1,18 @@
 const {response} = require('express');
 const axios = require('axios');
 const Proveedor = require('../models/proveedor');
+const FormData = require('form-data');
+const path = require('path');
+const fs = require('fs');
 const { typeMessages } = require('../cons/typeMessages');
 const { authFacebook } = require('../cons/optionsMessage');
 const { urlMeta } = require('../cons/urls');
+const { buscarNumeroExistente, obtenerNumerosExternos } = require('./proveedor');
 const { numeroTelefono } = require('../utils/crearTelefono');
-const { buscarNumeroExistente, agregarProveedor, obtenerNumerosExternos } = require('./proveedor');
 const { newFecha } = require('../utils/fecha');
 const { MensajeError } = require('../utils/error');
 const { SampleText, TemplateText, ReplyText } = require('../utils/textTypes');
 const { rutaDescargaArchivoRecibido } = require('../utils/manejoArchivos');
-const FormData = require('form-data');
-const path = require('path');
-const fs = require('fs');
 
 const Whatsapp = async (req, res = response) => {
   //Aqui empieza con la llegada de los mensajes desde whatsapp

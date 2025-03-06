@@ -16,7 +16,7 @@ router.post('/getChat',[
   validarCampos
 ], getChat);
 
-router.post('/actualizarPaciente', [
+router.post('/actualizarContacto', [
   check('nombre', 'Necesito un Nombre de contacto').not().isEmpty(),
   check('apellido').custom(validarDatoNoNulo),
   check('empresa').custom(validarDatoNoNulo),
