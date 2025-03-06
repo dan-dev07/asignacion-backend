@@ -11,7 +11,7 @@ const server = createServer(app);
 
 const io = new Server(server, {
   cors:{
-    origin: ['https://wa.altaespecialidad.escotel.mx'],
+    origin: ['http://localhost:5173', 'http://189.131.186.39:5173','https://jovial-malasada-025646.netlify.app'],
     credentials:true
   }
 });
@@ -32,6 +32,7 @@ app.use('/api/Usuarios', require('../router/usuarios'));
 app.use('/api/whatsapp', require('../router/whatsapp'));
 app.use('/api/Datos', require('../router/datos'));
 app.use('/api/Media', require('../router/media'));
+app.use('/api/ver', require('../router/version'));
 
 SocketServer(io);
 
