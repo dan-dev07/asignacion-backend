@@ -14,7 +14,7 @@ const obtenerNumerosExternos = async () => {
       const { telefono, uid, datosExterno, mensajes} = m;
       const ultimoMensaje = mensajes[mensajes.length - 1];
       return {
-        telefono: telefono.slice(-10),
+        telefono: telefono,
         uid,
         datosExterno,
         fecha:ultimoMensaje.fecha,
@@ -47,8 +47,7 @@ const obtenerNumerosExternos = async () => {
 
 const agregarProveedor = async (datos, mensajeId) => {
   try {
-    const {telefono:telExterno, nombre, apellido, empresa} = datos;
-    const telefono = 52 + telExterno;
+    const {telefono, nombre, apellido, empresa} = datos;
     const proveedor = await Proveedor.findOne({ telefono });
     if (!proveedor) {
       const datosExterno = {nombre, apellido, empresa};
@@ -64,8 +63,21 @@ const agregarProveedor = async (datos, mensajeId) => {
       const uid = uuidv4();
       const nuevoProveedor = await Proveedor.create({ telefono, uid, datosExterno, mensajes});
       return {ok:true, uid:nuevoProveedor.uid };
+    }else{
+      const actProveedor = await Proveedor.findOneAndUpdate({telefono}, {
+        $push:{
+          mensajes:{
+            fecha: newFecha(),
+            emisor:'Escotel',
+            tipo:'text',
+            mensaje:'Saludos! \n ¿Me puedes ayudar a cotizar un  servicio? Por favor.',
+            mensajeId,
+            leido:false
+          }
+        }
+      });
+      return {ok:true, uid:actProveedor.uid };
     };
-    return {ok:true, uid:proveedor.uid }
   } catch (error) {
     const err = MensajeError('No se guardó el numero del contacto', error, false);
     return err;

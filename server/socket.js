@@ -21,13 +21,13 @@ const SocketServer = (io) => {
     socket.on('enviar-template', async (datos, callback) => {
       const { telefono } = datos;
       const mensaje = await SendTemplateWhatsApp(telefono);
-      if (mensaje.ok) {
-        const proveedor = await agregarProveedor(datos, mensaje.mensajeId);
-        io.emit('todos-los-contactos', await obtenerNumerosExternos());
-        callback(proveedor);
+      if (!mensaje.ok) {
+        callback(mensaje);
         return;
       };
-      callback(mensaje);
+      const proveedor = await agregarProveedor(datos, mensaje.mensajeId);
+      io.emit('todos-los-contactos', await obtenerNumerosExternos());
+      callback(proveedor);
     });
 
     //iniciar conversación

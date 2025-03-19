@@ -2,7 +2,7 @@ const TemplateText = (number) => {
   const data = JSON.stringify({
     "messaging_product": "whatsapp",
     "recipient_type": "individual",
-    "to": 52 + number,
+    "to": number,
     "type": "template",
     "template": {
       "name": "hello_world",
