@@ -1,4 +1,3 @@
-const { agregarConversacion, buscarNumeroExistenteConversacion } = require("../controller/conversacion");
 const { obtenerNumerosExternos, agregarProveedor, guardarReplyMensajeEnviado, guardarMensajeEnviado } = require("../controller/proveedor");
 const { SendTemplateWhatsApp, SendReplyMessageWhatsApp, SendMessageWhatsApp } = require("../controller/whatsapp");
 const Proveedor = require("../models/proveedor");
@@ -20,22 +19,15 @@ const SocketServer = (io) => {
 
     //enviar template
     socket.on('enviar-template', async (datos, callback) => {
-      const {telefono} = datos;
-      const existeTel = await Proveedor.findOne({telefono:52 + telefono});
-      if (existeTel === null) {
-        const mensaje = await SendTemplateWhatsApp(telefono);
-        if (mensaje.ok) {
-          const proveedor = await agregarProveedor(datos, mensaje.mensajeId);
-          io.emit('todos-los-contactos', await obtenerNumerosExternos());
-          callback(proveedor);
-          return; 
-        };
-        callback(mensaje);
-
-      }else {
-        const err = MensajeError('El usuario ya existe', null, false);
-        callback(err);
+      const { telefono } = datos;
+      const mensaje = await SendTemplateWhatsApp(telefono);
+      if (mensaje.ok) {
+        const proveedor = await agregarProveedor(datos, mensaje.mensajeId);
+        io.emit('todos-los-contactos', await obtenerNumerosExternos());
+        callback(proveedor);
+        return;
       };
+      callback(mensaje);
     });
 
     //iniciar conversación
@@ -44,13 +36,13 @@ const SocketServer = (io) => {
       let mensajeId = '';
       if (message_id?.startsWith('wamid.')) {
         mensajeId = await SendReplyMessageWhatsApp(mensaje, telefono, message_id);
-        const datos = { user ,emisor, fecha, leido, mensaje, tipo, mensajeId, context:{message_id}};
-        const {ultimo} = await guardarReplyMensajeEnviado(telefono, datos);
+        const datos = { user, emisor, fecha, leido, mensaje, tipo, mensajeId, context: { message_id } };
+        const { ultimo } = await guardarReplyMensajeEnviado(telefono, datos);
         io.emit('mensaje-recibido', { ultimo, telefono });
       } else {
         mensajeId = await SendMessageWhatsApp(mensaje, telefono);
-        const datos =  { user, emisor, fecha, leido, mensaje, tipo, mensajeId };
-        const {ultimo} = await guardarMensajeEnviado(telefono, datos);
+        const datos = { user, emisor, fecha, leido, mensaje, tipo, mensajeId };
+        const { ultimo } = await guardarMensajeEnviado(telefono, datos);
         io.emit('mensaje-recibido', { ultimo, telefono });
       };
       io.emit('todos-los-contactos', await obtenerNumerosExternos());

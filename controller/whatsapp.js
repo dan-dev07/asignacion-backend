@@ -87,7 +87,7 @@ const SendTemplateWhatsApp = async (number) => {
     const data = TemplateText(number);
     const res = await axios.post(`${urlMeta}/messages`, data, authFacebook);
     if (res.status !== 200) {
-      return MensajeError('Error al enviar el mensaje', res.statusText, false);
+      return MensajeError('Error al enviar la plantilla', res.statusText, false);
     };
     const {messages} = res.data;
     return {
@@ -95,7 +95,7 @@ const SendTemplateWhatsApp = async (number) => {
       mensajeId:messages[0].id
     };
   } catch (error) {
-    return MensajeError('Error al enviar el mensaje',error, false);
+    return MensajeError('Error al enviar la Plantilla',error, false);
   };
 };
 

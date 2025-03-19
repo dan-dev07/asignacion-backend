@@ -14,7 +14,7 @@ const obtenerNumerosExternos = async () => {
       const { telefono, uid, datosExterno, mensajes} = m;
       const ultimoMensaje = mensajes[mensajes.length - 1];
       return {
-        telefono,
+        telefono: telefono.slice(-10),
         uid,
         datosExterno,
         fecha:ultimoMensaje.fecha,
