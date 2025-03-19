@@ -56,7 +56,7 @@ const entregarArchivoBuffer = async (req, res = express.response) => {
 // Configura multer para guardar archivos
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'controller/uploads');
+    cb(null, '/root/whatsapp/controller/uploads');
   },
   filename: (req, file, cb) => {
     cb(null, file.originalname);
@@ -74,7 +74,7 @@ const enviarArchivo = async (req, data, telefono, rutaBlobname, text, filename) 
       req.io.emit('archivo-enviado', ({ultimo:res.ultimo, telefono}));
     }else{
       req.io.emit('archivo-enviado', ({ultimo:res.error, telefono}));
-    }
+    };
   } catch (error) {
     const err = MensajeError('Error al enviar el archivo a Whatsapp');
     return err;
