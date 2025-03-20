@@ -70,7 +70,7 @@ const agregarProveedor = async (datos, mensajeId) => {
             fecha: newFecha(),
             emisor:'Escotel',
             tipo:'text',
-            mensaje:'Saludos! \n ¿Me puedes ayudar a cotizar un  servicio? Por favor.',
+            mensaje:'Estimado proveedor. ¿Nos puedes ayudar con una cotización? En caso afirmativo, favor de presionar \'Si\'.',
             mensajeId,
             leido:false
           }
