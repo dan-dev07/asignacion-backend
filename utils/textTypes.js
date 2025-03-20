@@ -5,9 +5,9 @@ const TemplateText = (number) => {
     "to": number,
     "type": "template",
     "template": {
-      "name": "hello_world",
+      "name": "solicitud_proveedor_botones",
       "language": {
-        "code": "en_US"
+        "code": "es_MX"
       },
     }
   });

@@ -56,7 +56,7 @@ const entregarArchivoBuffer = async (req, res = express.response) => {
 // Configura multer para guardar archivos
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, '/root/asignaciones-backend/controller/uploads');
+    cb(null, 'controller/uploads');
   },
   filename: (req, file, cb) => {
     cb(null, file.originalname);
