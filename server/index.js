@@ -11,7 +11,7 @@ const server = createServer(app);
 
 const io = new Server(server, {
   cors:{
-    origin: ['https://localhost:5173','http://189.242.234.232:5173', 'https://jovial-malasada-025646.netlify.app'],
+    origin: ['http://localhost:5173','http://189.242.234.232:5173', 'https://jovial-malasada-025646.netlify.app'],
     credentials:true
   }
 });
