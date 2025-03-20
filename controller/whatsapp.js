@@ -27,6 +27,8 @@ const Whatsapp = async (req, res = response) => {
 
       if (type === 'text') {
         await processMessage(req, messages);
+      } else if (type === 'button') {
+        console.log(messageObject);
       } else {
         const { ruta:urlDocumento, filename, caption } = await rutaDescargaArchivoRecibido(messages);
         await processMessage(req, messages, { urlDocumento, filename, caption });
