@@ -7,7 +7,7 @@ const fs = require('fs');
 const { typeMessages } = require('../cons/typeMessages');
 const { authFacebook } = require('../cons/optionsMessage');
 const { urlMeta } = require('../cons/urls');
-const { buscarNumeroExistente, obtenerNumerosExternos } = require('./proveedor');
+const { buscarNumeroExistente, obtenerNumerosExternos, agregarProveedor } = require('./proveedor');
 const { numeroTelefono } = require('../utils/crearTelefono');
 const { newFecha } = require('../utils/fecha');
 const { MensajeError } = require('../utils/error');
@@ -29,6 +29,7 @@ const Whatsapp = async (req, res = response) => {
         await processMessage(req, messages);
       } else if (type === 'button') {
         console.log(messageObject);
+        await processMessage(req, messages);
       } else {
         const { ruta:urlDocumento, filename, caption } = await rutaDescargaArchivoRecibido(messages);
         await processMessage(req, messages, { urlDocumento, filename, caption });
@@ -44,7 +45,15 @@ const Whatsapp = async (req, res = response) => {
 const processMessage = async (req, messages, additionalData = {}) => {
   const { type, from, id, context } = messages;
   const number = numeroTelefono(from);
-  const messageContent = type === 'text' ? messages['text']['body'] : typeMessages[type];
+  let messageContent;
+  if (type === 'text') {
+    messageContent = messages['text']['body'];
+  }else if (type ==='button') {
+    messageContent = messages['button']['text'];
+  }else{
+    messageContent = typeMessages[type];
+  };
+
   const datos = {id, messageContent, number, type, context, additionalData};
   const telExistente = await buscarNumeroExistente(number);
   if (telExistente.existe) {
@@ -185,6 +194,37 @@ const SendFileWhatsApp = async (data) => {
     return messages[0];  
   } catch (error) {
     return MensajeError('Error en -->SendFileWhatsApp', error, false);
+  };
+};
+
+const GuardarMensajeRecibidoBoton =async (datos) => {
+  try {
+    const {id, messageContent:texto, number:telefono, type:tipo, context, additionalData:{urlDocumento,filename, caption}} = datos;
+    const mensaje = {
+      fecha: newFecha(),
+      emisor: 'Externo',
+      tipo,
+      filename,
+      urlDocumento,
+      caption,
+      mensaje: texto,
+      mensajeId: id,
+      leido: false,
+      context,
+    };
+    const conversacion = await Proveedor.findOneAndUpdate(
+      { telefono },
+      { $push: { mensajes: mensaje }},
+      { new: true });
+    const ultimoMsg = conversacion.mensajes[conversacion.mensajes.length - 1];
+    const uid = conversacion.uid;
+    return {
+      ok: true,
+      mensaje: ultimoMsg,
+      uid
+    };
+  } catch (error) {
+    return MensajeError('No se pudo guardar el mensaje', error, false);
   };
 };
 
