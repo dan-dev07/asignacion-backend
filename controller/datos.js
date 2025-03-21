@@ -35,7 +35,8 @@ const mensajesContactos = async (req, res = response) => {
 
 const getChat = async (req, res = response) => {
   try {
-    const { telefono } = req.body;
+    const { telefono, pagina = 1, limite = 20 } = req.body;
+    const skip = (pagina - 1) * limite;
     const externoActual = await Proveedor.findOne({ telefono });
     const { mensajes } = externoActual;
     const mensajesLeidos = mensajes.map(c => {
@@ -44,9 +45,11 @@ const getChat = async (req, res = response) => {
       };
       return c;
     });
+
     const contactoActualizado = await Proveedor.findOneAndUpdate({ telefono }, { mensajes: mensajesLeidos }, { new: true });
     const { mensajes: mensajesAct, datosExterno } = contactoActualizado;
-    res.send({ mensajes: mensajesAct, telefono, datosExterno });
+    const mensajesPaginados = mensajesAct.slice(skip, skip + limite);
+    res.send({ mensajes: mensajesPaginados, telefono, datosExterno });
   } catch (error) {
     console.log(error);
     res.status(500).json({

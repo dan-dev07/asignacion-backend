@@ -12,7 +12,9 @@ const router = Router();
 router.get('/mensajes', mensajesContactos);
 
 router.post('/getChat',[
-  check('telefono', 'Necesito un telefono').not().isEmpty(),
+  check('telefono', 'Necesito un teléfono').not().isEmpty(),
+  check('pagina', 'Necesito una págna').not().isEmpty(),
+  check('limite', 'Necesito una cantidad').not().isEmpty(),
   validarCampos
 ], getChat);
 
