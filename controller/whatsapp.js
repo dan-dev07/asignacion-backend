@@ -13,6 +13,7 @@ const { newFecha } = require('../utils/fecha');
 const { MensajeError } = require('../utils/error');
 const { SampleText, TemplateText, ReplyText } = require('../utils/textTypes');
 const { rutaDescargaArchivoRecibido } = require('../utils/manejoArchivos');
+const { mostrarDatosEntradaWhatsapp } = require('../utils/mostrarMensajeWhatsapp');
 
 const Whatsapp = async (req, res = response) => {
   //Aqui empieza con la llegada de los mensajes desde whatsapp
@@ -28,9 +29,12 @@ const Whatsapp = async (req, res = response) => {
       if (type === 'text') {
         await processMessage(req, messages);
       } else if (type === 'button') {
-        console.log(messageObject);
         await processMessage(req, messages);
-      } else {
+      } else if (type === 'interactive') {
+        mostrarDatosEntradaWhatsapp(entry);
+      }else if (type === 'location') {
+        console.log(messageObject);
+      }else{
         const { ruta:urlDocumento, filename, caption } = await rutaDescargaArchivoRecibido(messages);
         await processMessage(req, messages, { urlDocumento, filename, caption });
       };

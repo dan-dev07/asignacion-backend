@@ -19,21 +19,22 @@ const mostrarDatosEntradaWhatsapp = (data) => {
         });
 
         // Extraemos los contactos
-        // value.contacts.forEach(contact => {
-        //   result.push({
-        //     contactName: contact.profile.name,
-        //     waId: contact.wa_id
-        //   });
-        // });
+        value.contacts.forEach(contact => {
+          result.push({
+            contactName: contact.profile.name,
+            waId: contact.wa_id
+          });
+        });
 
         // Extraemos los mensajes
         value.messages.forEach(message => {
           result.push({
+            context: message.context,
             from: message.from,
             messageId: message.id,
             timestamp: message.Timestamp,
             type: message.type,
-            [message.type]: [message.type].id
+            [message.type]: [message.type]
           });
         });
       });
