@@ -48,7 +48,7 @@ const getChat = async (req, res = response) => {
 
     const contactoActualizado = await Proveedor.findOneAndUpdate({ telefono }, { mensajes: mensajesLeidos }, { new: true });
     const { mensajes: mensajesAct, datosExterno } = contactoActualizado;
-    const mensajesPaginados = mensajesAct.slice(skip, skip + limite);
+    const mensajesPaginados = mensajesAct.reverse().slice(skip, skip + limite);
     res.send({ mensajes: mensajesPaginados, telefono, datosExterno });
   } catch (error) {
     console.log(error);
