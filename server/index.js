@@ -11,7 +11,7 @@ const server = createServer(app);
 
 const io = new Server(server, {
   cors:{
-    origin: ['https://wa.altaespecialidad.escotel.mx', 'https://jovial-malasada-025646.netlify.app'],
+    origin: ['https://dev-wa.asignacion.escotel.mx', 'https://jovial-malasada-025646.netlify.app'],
     credentials:true
   }
 });
