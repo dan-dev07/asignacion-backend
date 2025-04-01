@@ -52,8 +52,6 @@ const getChat = async (req, res = response) => {
     const index = mensajesPorFecha.reverse().findIndex((m) => m.mensajeId === limite.mensajeId);
     // arregloCortes = mensajesPorFecha.slice(-numMensajes, -(numMensajes - 10));
     arregloCortes = mensajesPorFecha.reverse().slice(-(index + 10), -(index+ 1));
-    console.log('arregloCortes: ', arregloCortes.length);
-
 
     const mensajesLeidos = mensajes.map(c => {
       if (c.emisor === 'Externo') {
