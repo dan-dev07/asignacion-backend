@@ -2,6 +2,7 @@ const { response, text } = require('express');
 const Proveedor = require('../models/proveedor');
 const { esSoloNumero } = require('../utils/esSoloNumero');
 const { eliminarAcentos } = require('../utils/textoSinAcentos');
+const { parseFecha } = require('../utils/fecha');
 const { obtenerNumerosExternos } = require('./proveedor');
 
 const mensajesContactos = async (req, res = response) => {
@@ -35,21 +36,34 @@ const mensajesContactos = async (req, res = response) => {
 
 const getChat = async (req, res = response) => {
   try {
-    const { telefono, pagina = 1, limite = 20 } = req.body;
-    const skip = (pagina - 1) * limite;
-    const externoActual = await Proveedor.findOne({ telefono });
-    const { mensajes } = externoActual;
-    const mensajesLeidos = mensajes.map(c => {
-      if (c.emisor === 'Externo') {
-        c.leido = true;
-      };
-      return c;
-    });
+    const { telefono, numMensajes, limite } = req.body;
+    const proveedorActual = await Proveedor.findOne({ telefono });
+    const { mensajes, datosExterno } = proveedorActual;
 
-    const contactoActualizado = await Proveedor.findOneAndUpdate({ telefono }, { mensajes: mensajesLeidos }, { new: true });
-    const { mensajes: mensajesAct, datosExterno } = contactoActualizado;
-    const mensajesPaginados = mensajesAct.reverse().slice(skip, skip + limite);
-    res.send({ mensajes: mensajesPaginados, telefono, datosExterno });
+    const mensajesPorFecha = mensajes.sort((a, b) => parseFecha(a.fecha) - parseFecha(b.fecha));
+    //cortes
+    let arregloCortes = []
+    if (!limite?.mensajeId) {
+      arregloCortes = mensajesPorFecha.slice(-10);
+      return res.send({ mensajes: arregloCortes, telefono, datosExterno });
+    };
+    const index = mensajesPorFecha.reverse().findIndex((m) => m.mensajeId === limite.mensajeId);
+    // arregloCortes = mensajesPorFecha.slice(-numMensajes, -(numMensajes - 10));
+    arregloCortes = mensajesPorFecha.reverse().slice(-(index + 10), -(index+ 1));
+    console.log('arregloCortes: ', arregloCortes.length);
+
+    // Ordenar el arreglo por fecha
+
+    // const mensajesLeidos = mensajes.map(c => {
+    //   if (c.emisor === 'Externo') {
+    //     c.leido = true;
+    //   };
+    //   return c;
+    // });
+
+    // const contactoActualizado = await Proveedor.findOneAndUpdate({ telefono }, { mensajes: mensajesLeidos }, { new: true });
+    // const { mensajes: mensajesAct, datosExterno } = contactoActualizado;
+    res.send({ mensajes: arregloCortes, telefono, datosExterno });
   } catch (error) {
     console.log(error);
     res.status(500).json({
@@ -153,21 +167,21 @@ const busquedaPorContacto = async (req, res = response) => {
       const arr = busqueda.map(m => {
         const { datosExterno, telefono, uid, mensajes } = m;
         const ultimo = mensajes[mensajes.length - 1];
-      return {
-        telefono,
-        uid,
-        fecha: ultimo.fecha,
-        emisor: ultimo.emisor,
-        tipo: ultimo.tipo,
-        mensaje: ultimo.mensaje,
-        datosExterno,
-      };
+        return {
+          telefono,
+          uid,
+          fecha: ultimo.fecha,
+          emisor: ultimo.emisor,
+          tipo: ultimo.tipo,
+          mensaje: ultimo.mensaje,
+          datosExterno,
+        };
       });
       res.send(arr);
     } else if (typeof (filtro) === 'string' && filtro.length > 0) {
       const filtroSinAcento = eliminarAcentos(filtro);
-      const busqueda = await Proveedor.find({ 
-        'datosExterno.nombre': { $regex: filtroSinAcento, $options: 'i' }, 
+      const busqueda = await Proveedor.find({
+        'datosExterno.nombre': { $regex: filtroSinAcento, $options: 'i' },
       });
       if (!busqueda) return res.send([]);
       const arr = busqueda.map(m => {

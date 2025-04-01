@@ -20,6 +20,15 @@ const newFecha = () => {
   return formattedDate;
 };
 
+// Función para convertir la fecha en un objeto Date
+const parseFecha = (fechaStr) => {
+  const [fecha, hora] = fechaStr.split(', ');
+  const [dia, mes, anio] = fecha.split('/');
+  const [horaStr, minutoStr, segundoStr] = hora.split(':');
+  return new Date(anio, mes - 1, dia, horaStr, minutoStr, segundoStr);
+};
+
 module.exports = {
-  newFecha
-}
+  newFecha,
+  parseFecha
+};
