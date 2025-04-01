@@ -40,7 +40,9 @@ const getChat = async (req, res = response) => {
     const proveedorActual = await Proveedor.findOne({ telefono });
     const { mensajes, datosExterno } = proveedorActual;
 
+    // Ordenar el arreglo por fecha
     const mensajesPorFecha = mensajes.sort((a, b) => parseFecha(a.fecha) - parseFecha(b.fecha));
+
     //cortes
     let arregloCortes = []
     if (!limite?.mensajeId) {
@@ -52,16 +54,15 @@ const getChat = async (req, res = response) => {
     arregloCortes = mensajesPorFecha.reverse().slice(-(index + 10), -(index+ 1));
     console.log('arregloCortes: ', arregloCortes.length);
 
-    // Ordenar el arreglo por fecha
 
-    // const mensajesLeidos = mensajes.map(c => {
-    //   if (c.emisor === 'Externo') {
-    //     c.leido = true;
-    //   };
-    //   return c;
-    // });
+    const mensajesLeidos = mensajes.map(c => {
+      if (c.emisor === 'Externo') {
+        c.leido = true;
+      };
+      return c;
+    });
 
-    // const contactoActualizado = await Proveedor.findOneAndUpdate({ telefono }, { mensajes: mensajesLeidos }, { new: true });
+    const contactoActualizado = await Proveedor.findOneAndUpdate({ telefono }, { mensajes: mensajesLeidos }, { new: true });
     // const { mensajes: mensajesAct, datosExterno } = contactoActualizado;
     res.send({ mensajes: arregloCortes, telefono, datosExterno });
   } catch (error) {
