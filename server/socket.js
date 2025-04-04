@@ -1,7 +1,5 @@
 const { obtenerNumerosExternos, agregarProveedor, guardarReplyMensajeEnviado, guardarMensajeEnviado } = require("../controller/proveedor");
 const { SendTemplateWhatsApp, SendReplyMessageWhatsApp, SendMessageWhatsApp } = require("../controller/whatsapp");
-const Proveedor = require("../models/proveedor");
-const { MensajeError } = require("../utils/error");
 const { comprobarJWT } = require("../utils/jwt");
 
 const SocketServer = (io) => {

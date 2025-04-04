@@ -20,7 +20,8 @@ const obtenerNumerosExternos = async () => {
         fecha:ultimoMensaje.fecha,
         emisor:ultimoMensaje.emisor,
         tipo:ultimoMensaje.tipo,
-        mensaje:ultimoMensaje.mensaje
+        mensaje:ultimoMensaje.mensaje,
+        leido:ultimoMensaje.leido
       };
     });
     return {

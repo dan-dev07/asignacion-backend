@@ -13,8 +13,7 @@ router.get('/mensajes', mensajesContactos);
 
 router.post('/getChat',[
   check('telefono', 'Necesito un teléfono').not().isEmpty(),
-  check('numMensajes', 'Necesito una págna').not().isEmpty(),
-  check('limite', 'Necesito una cantidad').not().isEmpty(),
+  check('mensajesChatActual', 'Necesito datos de la conversacion').not().isEmpty(),
   validarCampos
 ], getChat);
 
