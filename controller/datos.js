@@ -55,45 +55,20 @@ const getChat = async (req, res = response) => {
     //cortes
     if (Object.keys(mensajesChatActual).length === 0) {
       console.log('primera carga: ', mensajesChatActual);
-      const corte = ["$mensajes", -10];
+      const corte = ["$mensajes", -30];
       const datos = await cargaMensajes(corte);
       return res.send(datos);
     } else {
-      const { mensajeFinal, mensajeInicial, mensajesTotales } = mensajesChatActual;
-      const tamanioCorte = 20;
-      let pagina = 1;
-      let encontrado = false;
-      let corte = [];
-      let limiteMensajes = false;
-      let mensajeEncontrado = {};
-      let index;
-
-      while (!encontrado && !limiteMensajes) {
-        corte = ["$mensajes", -(tamanioCorte * pagina), tamanioCorte];
-        const { mensajes, tamMensajes, telefono, datosExterno } = await cargaMensajes(corte);
-        mensajes.reverse();
-        index = mensajes.findIndex(m => m.mensajeId === mensajeInicial.mensajeId);
-        mensajeEncontrado = mensajes.slice(index + 1, index + 1 + 3).reverse();
-        console.log('mensajeEncontrado; ', mensajeEncontrado);
-        if (index === -1) {
-          pagina++;
-          continue;
-        };
-
-        if (tamanioCorte * pagina > tamMensajes) {
-          limiteMensajes = true;
-        };
-        if (mensajeEncontrado.length < 3) {
-          pagina++;  // Si hay menos de 3 mensajes, suma una página
-          continue;  // Repite el ciclo y carga los nuevos mensajes
-        }
-        if (mensajeEncontrado.length) {
-          encontrado = true;
-        };
-        
-        console.log('while');
-        res.send({ mensajes: mensajeEncontrado, telefono, datosExterno });
-      };
+      const { mensajeFinal, mensajeInicial, mensajesTotales, pagina } = mensajesChatActual;
+      const cantidadCorte = mensajesTotales + 30;
+      const corte = ["$mensajes", -cantidadCorte, 30];
+      const datos = await cargaMensajes(corte);
+      if (cantidadCorte > datos.tamMensajes ) {
+        const {mensajes} = datos;
+        let mensajesIniciales = cantidadCorte - datos.tamMensajes;
+        return res.send({...datos, mensajes:mensajes.slice(0, -mensajesIniciales)});
+      }
+      return res.send(datos);           
     };
   } catch (error) {
     console.log(error);
