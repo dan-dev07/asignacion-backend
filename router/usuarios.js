@@ -16,6 +16,7 @@ router.post('/Agregar', [
   check('password', 'La contraseña es obligatorio').not().isEmpty(),
   check('email', 'Necesito un correo válido').isEmail(),
   check('rol', 'Necesito un puesto válido para este usuario').not().isEmpty(),
+  check('userUid', 'Necesito un identificador de usuario válido').not().isEmpty(),
   validarCampos
 ],crearUsario);
 
@@ -26,10 +27,12 @@ router.post('/actualizarUsuario',[
   check('rol', 'Necesito un puesto válido para este usuario').not().isEmpty().isArray({min:1, max:3}),
   check('activo', 'Necesito un puesto válido para este usuario').not().isEmpty().isBoolean(),
   check('uid', 'Necesito un puesto válido para este usuario').not().isEmpty(),
+  check('userUid', 'Necesito un identificador de usuario válido').not().isEmpty(),
   validarCampos
 ],actualizarUsuario);
 
 router.post('/actualizarEstado', [
+  check('userUid', 'Necesito un identificador válido').not().isEmpty(),
   check('uid', 'Necesito un identificador válido').not().isEmpty(),
   check('activo', 'Necesito el estado actual del usuario').not().isEmpty(),
   validarCampos

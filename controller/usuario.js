@@ -21,7 +21,17 @@ const obtenerUsuarios = async (req, res = response) => {
 
 const actulizarEstado = async (req, res = response) => {
   try {
-    const {uid, activo} = req.body;
+    const {uid, activo, userUid} = req.body;
+    const usuarioActual = await Usuario.findOne({uid: userUid});
+    console.log(usuarioActual);
+    
+    if (!usuarioActual.rol.includes("Admin")) {
+      return res.json({
+        ok:false,
+        response:'No autorizado'
+      });
+    };
+
     const act = await Usuario.findOneAndUpdate({ uid }, {activo}, {new:true});
     if (act) {
       return res.json({
@@ -43,7 +53,13 @@ const actulizarEstado = async (req, res = response) => {
 
 const actualizarUsuario =async (req, res = response) => {
   try {
-    const {nombre, password, email, rol, activo, uid} = req.body;
+    const {nombre, password, email, rol, activo, uid, userUid} = req.body;
+    const usuarioActual = await Usuario.findOne({uid: userUid});
+    if (!usuarioActual.rol.includes("Admin")) {
+      return res.json({
+        response:'No autorizado'
+      });
+    };
     
     //usuario actual sin cambios
     const usuario = await Usuario.findOne({uid});
@@ -78,28 +94,29 @@ const actualizarUsuario =async (req, res = response) => {
 
 const crearUsario = async (req, res = response) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, userUid } = req.body;
+    const usuarioActual = await Usuario.findOne({uid: userUid});
+    if (!usuarioActual.rol.includes("Admin")) {
+      return res.send({
+        ok: false,
+        response:'No autorizado'
+      });
+    };
     const existeEmail = await Usuario.findOne({ email });
     if (existeEmail) {
-      return res.status(400).json({
+      return res.send({
         ok: false,
         response: 'El correo ya existe',
       });
     };
-    //Estado activo como predeterminado
     req.body.activo = true;
-    //agregar uuid para el usuario
     req.body.uid = uuidv4();
     const usuario = new Usuario(req.body);
-    //Encriptar contraseña
     const salt = bcrypt.genSaltSync(5);
     usuario.password = bcrypt.hashSync(password, salt);
-
-    //Guardar usuario en la BD
     await usuario.save();
 
     res.send('Usuario creado');
-
   } catch (error) {
     console.log(error);
     res.status(500).json({
