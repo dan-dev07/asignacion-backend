@@ -54,12 +54,11 @@ const getChat = async (req, res = response) => {
 
     //cortes
     if (Object.keys(mensajesChatActual).length === 0) {
-      console.log('primera carga: ', mensajesChatActual);
       const corte = ["$mensajes", -30];
       const datos = await cargaMensajes(corte);
       return res.send(datos);
     } else {
-      const { mensajeFinal, mensajeInicial, mensajesTotales, pagina } = mensajesChatActual;
+      const { mensajesTotales } = mensajesChatActual;
       const cantidadCorte = mensajesTotales + 30;
       const corte = ["$mensajes", -cantidadCorte, 30];
       const datos = await cargaMensajes(corte);

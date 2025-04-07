@@ -5,7 +5,7 @@ const TemplateText = (number) => {
     "to": number,
     "type": "template",
     "template": {
-      "name": "solicitud_proveedor_botones",
+      "name": "solicitud_proveedor_boton2",
       "language": {
         "code": "es_MX"
       },
